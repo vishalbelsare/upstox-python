@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+.venv
 build/
 develop-eggs/
 dist/
@@ -45,6 +46,8 @@ coverage.xml
 *,cover
 .hypothesis/
 venv/
+myenv/
+venv_new/
 .python-version
 
 # Translations
@@ -68,3 +71,9 @@ target/
 .vscode/
 .swagger-codegen-ignore
 git_push.sh
+
+#Intellij
+.idea/
+
+#cursor
+.cursor/

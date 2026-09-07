@@ -3,7 +3,7 @@
 """
     Upstox Developer API
 
-    Build your App on the Upstox platform  ![Banner](https://api-v2.upstox.com/api-docs/images/banner.jpg \"banner\")  # Introduction  Upstox API is a set of rest APIs that provide data required to build a complete investment and trading platform. Execute orders in real time, manage user portfolio, stream live market data (using Websocket), and more, with the easy to understand API collection.  All requests are over HTTPS and the requests are sent with the content-type ‘application/json’. Developers have the option of choosing the response type as JSON or CSV for a few API calls.  To be able to use these APIs you need to create an App in the Developer Console and generate your **apiKey** and **apiSecret**. You can use a redirect URL which will be called after the login flow.  If you are a **trader**, you can directly create apps from Upstox mobile app or the desktop platform itself from **Apps** sections inside the **Account** Tab. Head over to <a href=\"http://account.upstox.com/developer/apps\" target=\"_blank\">account.upstox.com/developer/apps</a>.</br> If you are a **business** looking to integrate Upstox APIs, reach out to us and we will get a custom app created for you in no time.  It is highly recommended that you do not embed the **apiSecret** in your frontend app. Create a remote backend which does the handshake on behalf of the frontend app. Marking the apiSecret in the frontend app will make your app vulnerable to threats and potential issues.   # noqa: E501
+    Build your App on the Upstox platform  ![Banner](https://api.upstox.com/api-docs/images/banner.jpg \"banner\")  # Introduction  Upstox API is a set of rest APIs that provide data required to build a complete investment and trading platform. Execute orders in real time, manage user portfolio, stream live market data (using Websocket), and more, with the easy to understand API collection.  All requests are over HTTPS and the requests are sent with the content-type ‘application/json’. Developers have the option of choosing the response type as JSON or CSV for a few API calls.  To be able to use these APIs you need to create an App in the Developer Console and generate your **apiKey** and **apiSecret**. You can use a redirect URL which will be called after the login flow.  If you are a **trader**, you can directly create apps from Upstox mobile app or the desktop platform itself from **Apps** sections inside the **Account** Tab. Head over to <a href=\"http://account.upstox.com/developer/apps\" target=\"_blank\">account.upstox.com/developer/apps</a>.</br> If you are a **business** looking to integrate Upstox APIs, reach out to us and we will get a custom app created for you in no time.  It is highly recommended that you do not embed the **apiSecret** in your frontend app. Create a remote backend which does the handshake on behalf of the frontend app. Marking the apiSecret in the frontend app will make your app vulnerable to threats and potential issues.   # noqa: E501
 
     OpenAPI spec version: v2
     
@@ -31,6 +31,104 @@ class OrderApi(object):
         if api_client is None:
             api_client = ApiClient()
         self.api_client = api_client
+
+    def cancel_multi_order(self, **kwargs):  # noqa: E501
+        """Cancel multi order  # noqa: E501
+
+        API to cancel all the open or pending orders which can be applied to both AMO and regular orders.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.cancel_multi_order(async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool
+        :param str tag: The tag associated with the orders for which the orders must be cancelled
+        :param str segment: The segment for which the orders must be cancelled
+        :return: CancelOrExitMultiOrderResponse
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async_req'):
+            return self.cancel_multi_order_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.cancel_multi_order_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def cancel_multi_order_with_http_info(self, **kwargs):  # noqa: E501
+        """Cancel multi order  # noqa: E501
+
+        API to cancel all the open or pending orders which can be applied to both AMO and regular orders.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.cancel_multi_order_with_http_info(async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool
+        :param str tag: The tag associated with the orders for which the orders must be cancelled
+        :param str segment: The segment for which the orders must be cancelled
+        :param str algo_name: Algorithm name for the order (optional)
+        :return: CancelOrExitMultiOrderResponse
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['tag', 'segment', 'algo_name']  # noqa: E501
+        all_params.append('async_req')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method cancel_multi_order" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+        if 'tag' in params:
+            query_params.append(('tag', params['tag']))  # noqa: E501
+        if 'segment' in params:
+            query_params.append(('segment', params['segment']))  # noqa: E501
+
+        header_params = {}
+        if 'algo_name' in params:
+            header_params['X-Algo-Name'] = params['algo_name']  # noqa: E501
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json', '*/*'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['OAUTH2']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/v2/order/multi/cancel', 'DELETE',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='CancelOrExitMultiOrderResponse',  # noqa: E501
+            auth_settings=auth_settings,
+            async_req=params.get('async_req'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
 
     def cancel_order(self, order_id, api_version, **kwargs):  # noqa: E501
         """Cancel order  # noqa: E501
@@ -67,12 +165,13 @@ class OrderApi(object):
         :param async_req bool
         :param str order_id: The order ID for which the order must be cancelled (required)
         :param str api_version: API Version Header (required)
+        :param str algo_name: Algorithm name for the order (optional)
         :return: CancelOrderResponse
                  If the method is called asynchronously,
                  returns the request thread.
         """
 
-        all_params = ['order_id', 'api_version']  # noqa: E501
+        all_params = ['order_id', 'api_version', 'algo_name']  # noqa: E501
         all_params.append('async_req')
         all_params.append('_return_http_data_only')
         all_params.append('_preload_content')
@@ -107,6 +206,8 @@ class OrderApi(object):
         header_params = {}
         if 'api_version' in params:
             header_params['Api-Version'] = params['api_version']  # noqa: E501
+        if 'algo_name' in params:
+            header_params['X-Algo-Name'] = params['algo_name']  # noqa: E501
 
         form_params = []
         local_var_files = {}
@@ -120,7 +221,7 @@ class OrderApi(object):
         auth_settings = ['OAUTH2']  # noqa: E501
 
         return self.api_client.call_api(
-            '/order/cancel', 'DELETE',
+            '/v2/order/cancel', 'DELETE',
             path_params,
             query_params,
             header_params,
@@ -128,6 +229,104 @@ class OrderApi(object):
             post_params=form_params,
             files=local_var_files,
             response_type='CancelOrderResponse',  # noqa: E501
+            auth_settings=auth_settings,
+            async_req=params.get('async_req'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+    
+    def exit_positions(self, **kwargs):  # noqa: E501
+        """Exit all positions  # noqa: E501
+
+        This API provides the functionality to exit all the positions   # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.exit_positions(async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool
+        :param str tag: The tag associated with the positions for which the positions must be exit
+        :param str segment: The segment for which the positions must be exit
+        :return: CancelOrExitMultiOrderResponse
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async_req'):
+            return self.exit_positions_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.exit_positions_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def exit_positions_with_http_info(self, **kwargs):  # noqa: E501
+        """Exit all positions  # noqa: E501
+
+        This API provides the functionality to exit all the positions   # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.exit_positions_with_http_info(async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool
+        :param str tag: The tag associated with the positions for which the positions must be exit
+        :param str segment: The segment for which the positions must be exit
+        :param str algo_name: Algorithm name for the order (optional)
+        :return: CancelOrExitMultiOrderResponse
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['tag', 'segment', 'algo_name']  # noqa: E501
+        all_params.append('async_req')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method exit_positions" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+        if 'tag' in params:
+            query_params.append(('tag', params['tag']))  # noqa: E501
+        if 'segment' in params:
+            query_params.append(('segment', params['segment']))  # noqa: E501
+
+        header_params = {}
+        if 'algo_name' in params:
+            header_params['X-Algo-Name'] = params['algo_name']  # noqa: E501
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json', '*/*'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['OAUTH2']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/v2/order/positions/exit', 'POST',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='CancelOrExitMultiOrderResponse',  # noqa: E501
             auth_settings=auth_settings,
             async_req=params.get('async_req'),
             _return_http_data_only=params.get('_return_http_data_only'),
@@ -215,7 +414,7 @@ class OrderApi(object):
         auth_settings = ['OAUTH2']  # noqa: E501
 
         return self.api_client.call_api(
-            '/order/retrieve-all', 'GET',
+            '/v2/order/retrieve-all', 'GET',
             path_params,
             query_params,
             header_params,
@@ -318,7 +517,7 @@ class OrderApi(object):
         auth_settings = ['OAUTH2']  # noqa: E501
 
         return self.api_client.call_api(
-            '/order/history', 'GET',
+            '/v2/order/history', 'GET',
             path_params,
             query_params,
             header_params,
@@ -326,6 +525,97 @@ class OrderApi(object):
             post_params=form_params,
             files=local_var_files,
             response_type='GetOrderResponse',  # noqa: E501
+            auth_settings=auth_settings,
+            async_req=params.get('async_req'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def get_order_status(self, **kwargs):  # noqa: E501
+        """Get order details  # noqa: E501
+
+        This API provides the recent detail of the particular order the user has placed. The orders placed by the user is transient for a day and are cleared by the end of the trading session.\\n\\nThe order details can be requested using order_id.    # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.get_order_status(async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool
+        :param str order_id: The order reference ID for which the order details is required
+        :return: GetOrderDetailsResponse
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async_req'):
+            return self.get_order_status_with_http_info(**kwargs)  # noqa: E501
+        else:
+            (data) = self.get_order_status_with_http_info(**kwargs)  # noqa: E501
+            return data
+
+    def get_order_status_with_http_info(self, **kwargs):  # noqa: E501
+        """Get order details  # noqa: E501
+
+        This API provides the recent detail of the particular order the user has placed. The orders placed by the user is transient for a day and are cleared by the end of the trading session.\\n\\nThe order details can be requested using order_id.    # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.get_order_status_with_http_info(async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool
+        :param str order_id: The order reference ID for which the order details is required
+        :return: GetOrderDetailsResponse
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['order_id']  # noqa: E501
+        all_params.append('async_req')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method get_order_status" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+        if 'order_id' in params:
+            query_params.append(('order_id', params['order_id']))  # noqa: E501
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['*/*', 'application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['OAUTH2']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/v2/order/details', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='GetOrderDetailsResponse',  # noqa: E501
             auth_settings=auth_settings,
             async_req=params.get('async_req'),
             _return_http_data_only=params.get('_return_http_data_only'),
@@ -413,7 +703,7 @@ class OrderApi(object):
         auth_settings = ['OAUTH2']  # noqa: E501
 
         return self.api_client.call_api(
-            '/order/trades/get-trades-for-day', 'GET',
+            '/v2/order/trades/get-trades-for-day', 'GET',
             path_params,
             query_params,
             header_params,
@@ -516,7 +806,7 @@ class OrderApi(object):
         auth_settings = ['OAUTH2']  # noqa: E501
 
         return self.api_client.call_api(
-            '/order/trades', 'GET',
+            '/v2/order/trades', 'GET',
             path_params,
             query_params,
             header_params,
@@ -566,12 +856,13 @@ class OrderApi(object):
         :param async_req bool
         :param ModifyOrderRequest body: (required)
         :param str api_version: API Version Header (required)
+        :param str algo_name: Algorithm name for the order (optional)
         :return: ModifyOrderResponse
                  If the method is called asynchronously,
                  returns the request thread.
         """
 
-        all_params = ['body', 'api_version']  # noqa: E501
+        all_params = ['body', 'api_version', 'algo_name']  # noqa: E501
         all_params.append('async_req')
         all_params.append('_return_http_data_only')
         all_params.append('_preload_content')
@@ -604,6 +895,8 @@ class OrderApi(object):
         header_params = {}
         if 'api_version' in params:
             header_params['Api-Version'] = params['api_version']  # noqa: E501
+        if 'algo_name' in params:
+            header_params['X-Algo-Name'] = params['algo_name']  # noqa: E501
 
         form_params = []
         local_var_files = {}
@@ -623,7 +916,7 @@ class OrderApi(object):
         auth_settings = ['OAUTH2']  # noqa: E501
 
         return self.api_client.call_api(
-            '/order/modify', 'PUT',
+            '/v2/order/modify', 'PUT',
             path_params,
             query_params,
             header_params,
@@ -631,6 +924,108 @@ class OrderApi(object):
             post_params=form_params,
             files=local_var_files,
             response_type='ModifyOrderResponse',  # noqa: E501
+            auth_settings=auth_settings,
+            async_req=params.get('async_req'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def place_multi_order(self, body, **kwargs):  # noqa: E501
+        """Place multi order  # noqa: E501
+
+        This API allows you to place multiple orders to the exchange via Upstox.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.place_multi_order(body, async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool
+        :param list[MultiOrderRequest] body: (required)
+        :return: MultiOrderResponse
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async_req'):
+            return self.place_multi_order_with_http_info(body, **kwargs)  # noqa: E501
+        else:
+            (data) = self.place_multi_order_with_http_info(body, **kwargs)  # noqa: E501
+            return data
+
+    def place_multi_order_with_http_info(self, body, **kwargs):  # noqa: E501
+        """Place multi order  # noqa: E501
+
+        This API allows you to place multiple orders to the exchange via Upstox.  # noqa: E501
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.place_multi_order_with_http_info(body, async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool
+        :param list[MultiOrderRequest] body: (required)
+        :param str algo_name: Algorithm name for the order (optional)
+        :return: MultiOrderResponse
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['body', 'algo_name']  # noqa: E501
+        all_params.append('async_req')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method place_multi_order" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'body' is set
+        if ('body' not in params or
+                params['body'] is None):
+            raise ValueError("Missing the required parameter `body` when calling `place_multi_order`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+
+        query_params = []
+
+        header_params = {}
+        if 'algo_name' in params:
+            header_params['X-Algo-Name'] = params['algo_name']  # noqa: E501
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        if 'body' in params:
+            body_params = params['body']
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['*/*', 'application/json'])  # noqa: E501
+
+        # HTTP header `Content-Type`
+        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['OAUTH2']  # noqa: E501
+
+        return self.api_client.call_api(
+            '/v2/order/multi/place', 'POST',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='MultiOrderResponse',  # noqa: E501
             auth_settings=auth_settings,
             async_req=params.get('async_req'),
             _return_http_data_only=params.get('_return_http_data_only'),
@@ -673,12 +1068,13 @@ class OrderApi(object):
         :param async_req bool
         :param PlaceOrderRequest body: (required)
         :param str api_version: API Version Header (required)
+        :param str algo_name: Algorithm name for the order (optional)
         :return: PlaceOrderResponse
                  If the method is called asynchronously,
                  returns the request thread.
         """
 
-        all_params = ['body', 'api_version']  # noqa: E501
+        all_params = ['body', 'api_version', 'algo_name']  # noqa: E501
         all_params.append('async_req')
         all_params.append('_return_http_data_only')
         all_params.append('_preload_content')
@@ -711,6 +1107,8 @@ class OrderApi(object):
         header_params = {}
         if 'api_version' in params:
             header_params['Api-Version'] = params['api_version']  # noqa: E501
+        if 'algo_name' in params:
+            header_params['X-Algo-Name'] = params['algo_name']  # noqa: E501
 
         form_params = []
         local_var_files = {}
@@ -730,7 +1128,7 @@ class OrderApi(object):
         auth_settings = ['OAUTH2']  # noqa: E501
 
         return self.api_client.call_api(
-            '/order/place', 'POST',
+            '/v2/order/place', 'POST',
             path_params,
             query_params,
             header_params,

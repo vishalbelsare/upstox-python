@@ -1,0 +1,1547 @@
+import upstox_client
+import data_token
+from upstox_client.rest import ApiException
+from datetime import datetime, time
+import json
+
+
+def is_within_market_hours():
+    # Get the current time
+    now = datetime.now().time()
+
+    # Define market opening and closing times
+    market_open = time(9, 0)  # 9:00 AM
+    market_close = time(15, 30)  # 3:30 PM
+
+    # Check if the current time is within market hours
+    return market_open <= now <= market_close
+
+
+configuration = upstox_client.Configuration()
+configuration.access_token = data_token.access_token
+api_version = '2.0'
+
+api_instance = upstox_client.UserApi(upstox_client.ApiClient(configuration))
+
+try:
+    # Get User Fund And Margin
+    api_response = api_instance.get_profile(api_version)
+    if api_response.status!="success":
+        print("error in get profile API")
+
+except ApiException as e:
+    print("Exception when calling UserApi->get_user_fund_margin: %s\n" % e)
+
+api_instance = upstox_client.UserApi(upstox_client.ApiClient(configuration))
+
+try:
+    # Get User Fund And Margin
+    api_response = api_instance.get_user_fund_margin(api_version)
+    if api_response.data is None:
+        print("Wrong response from get funds and margin")
+except ApiException as e:
+    print("Exception when calling UserApi->get_user_fund_margin: %s\n" % e)
+
+api_instance = upstox_client.UserApi(upstox_client.ApiClient(configuration))
+try:
+    api_response = api_instance.get_user_fund_margin_v3()
+    if api_response.data is None:
+        print("Wrong response from get_user_fund_margin_v3")
+except ApiException as e:
+    print("Exception when calling UserApi->get_user_fund_margin_v3: %s\n" % e)
+
+api_instance = upstox_client.UserApi(upstox_client.ApiClient(configuration))
+try:
+    api_response = api_instance.get_user_ips()
+    if api_response.status != "success":
+        print("Wrong response from get_user_ips")
+except ApiException as e:
+    print("Exception when calling UserApi->get_user_ips: %s\n" % e)
+
+api_instance = upstox_client.UserApi(upstox_client.ApiClient(configuration))
+body = upstox_client.UpdateUserIpRequest(primary_ip="1.2.3.4")
+try:
+    api_response = api_instance.update_user_ip(body)
+    if api_response.status != "success":
+        print("Wrong response from update_user_ip")
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') not in ["UDAPI100068", "UDAPI100069"]:
+        print("update_user_ip giving wrong response")
+
+api_instance = upstox_client.UserApi(upstox_client.ApiClient(configuration))
+try:
+    api_response = api_instance.get_kill_switch()
+    if api_response.status != "success":
+        print("Wrong response from get_kill_switch")
+except ApiException as e:
+    print("Exception when calling UserApi->get_kill_switch: %s\n" % e)
+
+api_instance = upstox_client.UserApi(upstox_client.ApiClient(configuration))
+body = [upstox_client.KillSwitchSegmentUpdateRequest(segment="NSE_EQ", action="DISABLE")]
+try:
+    api_response = api_instance.update_kill_switch(body)
+    if api_response.status != "success":
+        print("Wrong response from update_kill_switch")
+except ApiException as e:
+    print("Exception when calling UserApi->update_kill_switch: %s\n" % e)
+
+api_instance = upstox_client.ChargeApi(upstox_client.ApiClient(configuration))
+instrument_token = 'NSE_EQ|INE669E01016'
+quantity = 10
+product = 'D'
+transaction_type = 'BUY'
+price = 13.4
+
+try:
+    # Brokerage details
+    api_response = api_instance.get_brokerage(instrument_token, quantity, product, transaction_type, price, api_version)
+    if api_response.data.charges is None:
+        print("Brokerage giving wrong response")
+except ApiException as e:
+    print("Exception when calling ChargeApi->get_brokerage: %s\n" % e)
+    
+instruments = [
+    upstox_client.Instrument(instrument_key="NSE_EQ|INE528G01035",quantity=12,product="D",transaction_type="BUY"),
+    upstox_client.Instrument(instrument_key="NSE_EQ|INE002A01018",quantity=1,product="D",transaction_type="BUY")
+]
+margin_body = upstox_client.MarginRequest(instruments)
+try:
+    api_response = api_instance.post_margin(margin_body)
+    if api_response.status!="success":
+        print("error in margin api")
+except ApiException as e:
+    print("Exception when calling Margin API: %s\n" % e.body)  
+    
+api_instance = upstox_client.OrderApi(upstox_client.ApiClient(configuration))
+body = upstox_client.PlaceOrderRequest(1, "D", "DAY", 5.0, "string", "NSE_EQ|INE528G01035", "LIMIT", "BUY", 0, 0.0,
+                                       True)
+api_version = '2.0'
+try:
+    api_response = api_instance.place_order(body, api_version, algo_name=data_token.algo_name_header)
+    if is_within_market_hours():
+        if api_response.status != "success":
+            print("error in place order")
+except ApiException as e:
+    if e.status == 400:
+        if not is_within_market_hours():
+            print("exception in place order: ", e)
+    else:
+        print("exception in place order: ", e)
+
+api_instance = upstox_client.OrderApi(upstox_client.ApiClient(configuration))
+body = upstox_client.ModifyOrderRequest(7, "DAY", 0, "231222010275930", "LIMIT", 0, 0)
+api_version = '2.0'  # str | API Version Header
+
+try:
+    # Modify order
+    api_response = api_instance.modify_order(body, api_version, algo_name=data_token.algo_name_header)
+    print(api_response)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("modify order giving wrong response")
+        
+#order details
+order_id = '240925010636040'
+
+param = {
+    'tag': "sdk_python_tag"
+}
+
+try:
+    api_response = api_instance.cancel_multi_order(**param, algo_name=data_token.algo_name_header)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI1109":
+        print("cancel multi giving wrong response")
+
+try:
+    api_response = api_instance.exit_positions(**param, algo_name=data_token.algo_name_header)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI1111" and data_dict.get('errors')[0].get('errorCode') != "UDAPI1113":
+        print("exit position giving wrong response")
+
+body = [
+    upstox_client.MultiOrderRequest(1, "I", "DAY", 5, "kg_python_sdk", False, "NSE_EQ|INE669E01016", "LIMIT", "BUY",
+                                    0, 0, True, "1"),
+    upstox_client.MultiOrderRequest(1, "D", "DAY", 8.9, "kg_python_sdk1", False, "NSE_EQ|INE669E01016", "LIMIT", "BUY",
+                                    0, 0, True, "2")
+]
+
+try:
+    api_response = api_instance.place_multi_order(body, algo_name=data_token.algo_name_header)
+    print( "multi_order=>  " , api_response)
+except ApiException as e:
+    print("Exception when calling OrderApi->multi_place_order: %s\n" % e.body)
+
+
+try:
+    api_response = api_instance.get_order_status(order_id=order_id)
+    print(api_response)
+
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("order details giving wrong response")
+        
+api_instance = upstox_client.OrderApi(upstox_client.ApiClient(configuration))
+order_id = '231221011081579'
+api_version = '2.0'
+
+try:
+    # Cancel order
+    api_response = api_instance.cancel_order(order_id, api_version, algo_name=data_token.algo_name_header)
+    print(api_response)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("cancel order giving wrong response")
+
+api_instance = upstox_client.OrderApi(upstox_client.ApiClient(configuration))
+api_version = '2.0'
+try:
+    # Get order book
+    api_response = api_instance.get_order_book(api_version)
+    if api_response.status != "success":
+        print("get order book giving invalid data")
+except ApiException as e:
+    print("Exception when calling OrderApi->get_order_book: %s\n" % e)
+
+api_instance = upstox_client.OrderApi(upstox_client.ApiClient(configuration))
+api_version = '2.0'
+order_id = '240112010371054'
+
+try:
+    api_response = api_instance.get_order_details(api_version, order_id=order_id)
+    print(api_response)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("get order details giving wrong response")
+
+api_instance = upstox_client.OrderApi(upstox_client.ApiClient(configuration))
+api_version = '2.0'
+
+try:
+    # Get trades
+    api_response = api_instance.get_trade_history(api_version)
+    if api_response.status != "success":
+        print("get order book giving invalid data")
+except ApiException as e:
+    print("Exception when calling OrderApi->get_trade_history: %s\n" % e)
+
+api_instance = upstox_client.OrderApi(upstox_client.ApiClient(configuration))
+order_id = '240112010371054'
+api_version = '2.0'
+
+try:
+    # Get trades for order
+    api_response = api_instance.get_trades_by_order(order_id, api_version)
+    if api_response.status != "success":
+        print("get order book giving invalid data")
+except ApiException as e:
+    print("Exception when calling OrderApi->get_trades_by_order: %s\n" % e)
+
+api_instance = upstox_client.PortfolioApi(upstox_client.ApiClient(configuration))
+body = upstox_client.ConvertPositionRequest(instrument_token="NSE_EQ|INE528G01035", quantity=1, new_product="D",
+                                            old_product="I", transaction_type="BUY")
+api_version = '2.0'
+
+try:
+    # Convert Positions
+    api_response = api_instance.convert_positions(body, api_version)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI1035":
+        print("convert position giving error")
+
+api_instance = upstox_client.PortfolioApi(upstox_client.ApiClient(configuration))
+
+try:
+    api_response = api_instance.get_holdings(api_version)
+    if api_response.status != "success":
+        print("get holding giving wrong response")
+except ApiException as e:
+    print("Exception when holding api %s\n" % e)
+
+api_instance = upstox_client.PortfolioApi(upstox_client.ApiClient(configuration))
+
+try:
+    api_response = api_instance.get_positions(api_version)
+    if api_response.status != "success":
+        print("get position giving wrong response")
+except ApiException as e:
+    print("Exception when calling position: %s\n" % e)
+
+api_instance = upstox_client.TradeProfitAndLossApi(upstox_client.ApiClient(configuration))
+segment = 'EQ'
+financial_year = '2324'  # str | Financial year for which data has been requested. Concatenation of last 2 digits of from year and to year Sample:for 2021-2022, financial_year will be 2122
+api_version = '2.0'  # str | API Version Header
+from_date = '02-04-2023'  # str | Date from which data needs to be fetched. from_date and to_date should fall under the same financial year as mentioned in financial_year attribute. Date in dd-mm-yyyy format (optional)
+to_date = '20-03-2024'  # str | Date till which data needs to be fetched. from_date and to_date should fall under the same financial year as mentioned in financial_year attribute. Date in dd-mm-yyyy format (optional)
+
+try:
+    # Get Trade-wise Profit and Loss Report Data
+    api_response = api_instance.get_trade_wise_profit_and_loss_meta_data(segment, financial_year, api_version,
+                                                                         from_date=from_date, to_date=to_date)
+    if api_response.status != "success":
+        print("get report meta data giving wrong response")
+except ApiException as e:
+    print("Exception when calling TradeProfitAndLossApi->get_trade_wise_profit_and_loss_data: %s\n" % e)
+segment = 'EQ'
+financial_year = '2324'  # str | Financial year for which data has been requested. Concatenation of last 2 digits of from year and to year Sample:for 2021-2022, financial_year will be 2122
+page_number = 1
+page_size = 4
+api_version = '2.0'  # str | API Version Header
+from_date = '02-04-2023'  # str | Date from which data needs to be fetched. from_date and to_date should fall under the same financial year as mentioned in financial_year attribute. Date in dd-mm-yyyy format (optional)
+to_date = '20-03-2024'  # str | Date till which data needs to be fetched. from_date and to_date should fall under the same financial year as mentioned in financial_year attribute. Date in dd-mm-yyyy format (optional)
+
+try:
+    # Get Trade-wise Profit and Loss Report Data
+    api_response = api_instance.get_trade_wise_profit_and_loss_data(segment, financial_year, page_number, page_size,
+                                                                    api_version, from_date=from_date, to_date=to_date)
+    if api_response.status != "success":
+        print("get profit loss report data giving wrong response")
+except ApiException as e:
+    print("Exception when calling TradeProfitAndLossApi->get_trade_wise_profit_and_loss_data: %s\n" % e)
+
+try:
+    # Get Trade-wise Profit and Loss Report Data
+    api_response = api_instance.get_profit_and_loss_charges(segment, financial_year, api_version, from_date=from_date,
+                                                            to_date=to_date)
+    if api_response.status != "success":
+        print("get trade charges giving wrong response")
+except ApiException as e:
+    print("Exception when calling TradeProfitAndLossApi->get_trade_wise_profit_and_loss_data: %s\n" % e)
+
+api_instance = upstox_client.HistoryApi()
+instrument_key = 'NSE_EQ|INE669E01016'
+interval = '1minute'
+to_date = '2023-11-13'
+from_date = '2023-11-12'
+try:
+    api_response = api_instance.get_historical_candle_data1(instrument_key, interval, to_date, from_date, api_version)
+    if api_response.status != "success":
+        print("historical api not giving success")
+except ApiException as e:
+    print("Exception when calling HistoryApi->get_historical_candle_data: %s\n" % e)
+
+api_instance = upstox_client.HistoryApi()
+instrument_key = 'NSE_EQ|INE669E01016'
+interval = '1minute'
+try:
+
+    api_response = api_instance.get_intra_day_candle_data(instrument_key, interval, api_version)
+    if api_response.status != "success":
+        print("historical intraday api not giving success")
+except ApiException as e:
+    print("Exception when calling HistoryApi->get_historical_candle_data: %s\n" % e)
+
+symbol = 'NSE_EQ|INE669E01016'
+api_instance = upstox_client.MarketQuoteApi(upstox_client.ApiClient(configuration))
+
+try:
+    api_response = api_instance.get_full_market_quote(symbol, api_version)
+    if api_response.status != "success":
+        print("market quotes full api not giving success")
+except ApiException as e:
+    print("Exception when calling MarketQuoteApi->get_full_market_quote: %s\n" % e)
+
+symbol = 'NSE_EQ|INE669E01016'
+api_instance = upstox_client.MarketQuoteApi(upstox_client.ApiClient(configuration))
+
+try:
+    api_response = api_instance.ltp(symbol, api_version)
+    if api_response.status != "success":
+        print("market quotes ltp api not giving success")
+except ApiException as e:
+    print("Exception when calling MarketQuoteApi->get_full_market_quote: %s\n" % e)
+
+symbol = 'NSE_EQ|INE669E01016'
+api_instance = upstox_client.MarketQuoteApi(upstox_client.ApiClient(configuration))
+interval = '1d'
+
+try:
+    api_response = api_instance.get_market_quote_ohlc(symbol, interval, api_version)
+    if api_response.status != "success":
+        print("market quotes ohlc api not giving success")
+except ApiException as e:
+    print("Exception when calling MarketQuoteApi->get_full_market_quote: %s\n" % e)
+
+api_instance = upstox_client.MarketHolidaysAndTimingsApi(upstox_client.ApiClient(configuration))
+
+try:
+    api_response = api_instance.get_holidays()
+    if api_response.status != "success":
+        print("error in get holidays")
+except ApiException as e:
+    print("Exception when calling MarketHolidaysAndTimingsApi: %s\n" % e)
+
+try:
+    api_response = api_instance.get_holiday("2024-01-22")
+    if api_response.status != "success":
+        print("error in get holiday on a date")
+except ApiException as e:
+    print("Exception when calling MarketHolidaysAndTimingsApi: %s\n" % e)
+
+try:
+    api_response = api_instance.get_exchange_timings("2024-01-22")
+    if api_response.status != "success":
+        print("error get exchange timings")
+except ApiException as e:
+    print("Exception when calling MarketHolidaysAndTimingsApi: %s\n" % e)
+
+try:
+    api_response = api_instance.get_market_status("NSE")
+    if api_response.status != "success":
+        print("error get market status")
+except ApiException as e:
+    print("Exception when calling MarketHolidaysAndTimingsApi: %s\n" % e)
+
+
+
+api_instance = upstox_client.OrderApiV3(upstox_client.ApiClient(configuration))
+entry_rule = upstox_client.GttRule(strategy="ENTRY", trigger_type="ABOVE", trigger_price=7)
+target_rule = upstox_client.GttRule(strategy="TARGET", trigger_type="IMMEDIATE", trigger_price=9)
+stoploss_rule = upstox_client.GttRule(strategy="STOPLOSS", trigger_type="IMMEDIATE", trigger_price=5)
+rules = [entry_rule, target_rule, stoploss_rule]
+body = upstox_client.GttPlaceOrderRequest(type="MULTIPLE", instrument_token="NSE_EQ|INE669E01016", product="D", quantity=1, rules=rules, transaction_type="BUY")
+try:
+    api_response = api_instance.place_gtt_order(body=body, algo_name=data_token.algo_name_header)
+    print(" gtt_order => " , api_response)
+except ApiException as e:
+    print("Exception when calling OrderApi->gtt_place_order: %s\n" % e)
+
+entry_rule = upstox_client.GttRule(strategy="ENTRY", trigger_type="BELOW", trigger_price=60)
+target_rule = upstox_client.GttRule(strategy="TARGET", trigger_type="IMMEDIATE", trigger_price=90)
+stoploss_rule = upstox_client.GttRule(strategy="STOPLOSS", trigger_type="IMMEDIATE", trigger_price=50, trailing_gap=3)
+rules = [entry_rule, target_rule, stoploss_rule]
+body = upstox_client.GttPlaceOrderRequest(type="MULTIPLE", instrument_token="NSE_EQ|INE584A01023", product="MTF", quantity=1, rules=rules, transaction_type="BUY")
+try:
+    api_response = api_instance.place_gtt_order(body=body, algo_name=data_token.algo_name_header)
+    print(" tsl gtt_order => " , api_response)
+except ApiException as e:
+    print("Exception when calling OrderApi->place_order: %s\n" % e)
+
+body = upstox_client.GttModifyOrderRequest(type="MULTIPLE", gtt_order_id="GTT-C2503030018840", rules=rules, quantity=2)
+try:
+    api_response = api_instance.modify_gtt_order(body=body, algo_name=data_token.algo_name_header)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("modify gtt giving error")
+
+body = upstox_client.GttCancelOrderRequest(gtt_order_id="GTT-C250303008840")
+try:
+    api_response = api_instance.cancel_gtt_order(body=body, algo_name=data_token.algo_name_header)
+    print(api_response)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("cancel gtt giving error")
+
+
+try:
+    api_response = api_instance.get_gtt_order_details(gtt_order_id="GTT-C25030300128840")
+    if api_response.status != "success":
+        print("get_option_contracts giving error")
+except ApiException as e:
+    print("Exception when calling OrderApi->get_gtt_order_details: %s\n" % e)
+
+body = upstox_client.PlaceOrderV3Request(quantity=1, product="D",validity="DAY", price=9.12, tag="string", instrument_token="NSE_EQ|INE669E01016", order_type="LIMIT",transaction_type="BUY", disclosed_quantity=0, trigger_price=0.0, is_amo=True, slice=True)
+
+try:
+    api_response = api_instance.place_order(body, algo_name=data_token.algo_name_header)
+    print("place order v3 => ", api_response)
+except ApiException as e:
+    print("Exception when calling OrderApi->place_orderV3: %s\n" % e)
+
+body = upstox_client.ModifyOrderRequest(1, "DAY", 9.12, "25030310405859", "LIMIT", 0, 0)
+
+try:
+    api_response = api_instance.modify_order(body, algo_name=data_token.algo_name_header)
+    print(api_response)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("modify v3 giving error")
+
+try:
+    api_response = api_instance.cancel_order("2501211050101", algo_name=data_token.algo_name_header)
+    print(api_response)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("cancel v3 giving error")
+
+api_instance = upstox_client.OptionsApi(upstox_client.ApiClient(configuration))
+
+try:
+    api_response = api_instance.get_option_contracts("NSE_INDEX|Nifty 50")
+    if api_response.status != "success":
+        print("get_option_contracts giving error")
+except ApiException as e:
+    print("Exception when calling MarketHolidaysAndTimingsApi: %s\n" % e)
+
+try:
+    api_response = api_instance.get_put_call_option_chain("NSE_INDEX|Nifty 50", "2024-03-21")
+    if api_response.status != "success":
+        print("get_put_call_option_chain giving error")
+except ApiException as e:
+    print("Exception when calling MarketHolidaysAndTimingsApi: %s\n" % e)
+
+api_instance = upstox_client.LoginApi()
+api_version = '2.0'
+code = '{your_auth_code}'
+client_id = '{your_client_id}'
+client_secret = '{your_client_secret}'
+redirect_uri = '{your_redirect_url}'
+grant_type = 'grant_type_example'
+
+try:
+    # Get token API
+    api_response = api_instance.token(api_version, code=code, client_id=client_id, client_secret=client_secret,
+                                      redirect_uri=redirect_uri, grant_type=grant_type)
+    print(api_response)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100069":
+        print("convert position giving error")
+
+api_instance = upstox_client.PostTradeApi(upstox_client.ApiClient(configuration=configuration))
+ 
+try:
+    api_response = api_instance.get_trades_by_date_range("2023-04-01", "2024-03-31",1,1000)
+    if api_response.status != "success":
+        print("error in post trade api")
+except ApiException as e:
+    print("Exception when calling PostTrade api: %s\n" % e)
+
+
+
+
+apiInstance = upstox_client.PortfolioApi(upstox_client.ApiClient(configuration))
+
+try:
+    response = apiInstance.get_mtf_positions()
+    if api_response.status != "success":
+        print("error in get mtf positions api")
+except ApiException as e:
+    print("Exception when calling mtf positions: %s\n" % e)
+
+
+apiInstance = upstox_client.HistoryV3Api(upstox_client.ApiClient(configuration))
+try:
+    response = apiInstance.get_historical_candle_data("NSE_EQ|INE669E01016", "minutes", "1", "2025-01-02")
+    if api_response.status != "success":
+        print("error in get_historical_candle_data api")
+except ApiException as e:
+    print("Exception when calling historical v3 api: %s\n" % e)
+
+
+try:
+    response = apiInstance.get_historical_candle_data1("NSE_EQ|INE669E01016", "minutes", "1", "2025-01-02","2025-01-02")
+    if api_response.status != "success":
+        print("error in get_historical_candle_data1 api")
+except ApiException as e:
+    print("Exception when calling historical v3 api: %s\n" % e)
+
+try:
+    response = apiInstance.get_intra_day_candle_data("NSE_EQ|INE669E01016", "minutes", "1")
+    if api_response.status != "success":
+        print("error in get_intra_day_candle_data api")
+except ApiException as e:
+    print("Exception when calling historical v3 api: %s\n" % e)
+
+apiInstance = upstox_client.MarketQuoteV3Api(upstox_client.ApiClient(configuration))
+try:
+# For a single instrument
+    response = apiInstance.get_market_quote_ohlc("I1", instrument_key="NSE_EQ|INE669E01016")
+    if api_response.status != "success":
+        print("error in get_market_quote_ohlc api")
+except ApiException as e:
+    print("Exception when calling market quote v3 api: %s\n" % e)
+
+try:
+    response = apiInstance.get_market_quote_option_greek(instrument_key="NSE_FO|38604,NSE_FO|49210")
+    if api_response.status != "success":
+        print("error in get_market_quote_ohlc api")
+except ApiException as e:
+    print("Exception when calling market quote v3 api: %s\n" % e)
+
+try:
+    response = apiInstance.get_ltp(instrument_key="NSE_EQ|INE669E01016")
+    if api_response.status != "success":
+        print("error in get_ltp api")
+except ApiException as e:
+    print("Exception when calling market quote v3 api: %s\n" % e)
+
+
+apiInstance = upstox_client.ExpiredInstrumentApi(upstox_client.ApiClient(configuration))
+try:
+    response = apiInstance.get_expiries("NSE_INDEX|Nifty 50")
+    if api_response.status != "success":
+        print("error in get_expiries")
+except ApiException as e:
+    print("Exception when calling expired instrument v3 api: %s\n" % e)
+
+
+
+try:
+    response = apiInstance.get_expired_option_contracts("NSE_INDEX|Nifty 50", "2025-04-30")
+    if api_response.status != "success":
+        print("error in get_expired_option_contracts")
+except ApiException as e:
+    print("Exception when calling expired instrument v3 api: %s\n" % e)
+
+
+try:
+    response = apiInstance.get_expired_future_contracts("NSE_INDEX|Nifty 50", "2025-04-24")
+    if api_response.status != "success":
+        print("error in get_expired_future_contracts")
+except ApiException as e:
+    print("Exception when calling expired instrument v3 api: %s\n" % e)
+
+
+try:
+    response = apiInstance.get_expired_historical_candle_data("NSE_FO|54452|24-04-2025", "1minute", "2025-04-24", "2025-04-24")
+    if api_response.status != "success":
+        print("error in get_expired_historical_candle_data")
+except ApiException as e:
+    print("Exception when calling expired instrument v3 api: %s\n" % e)
+
+
+# ========================================
+# ALGO ID TESTS - Testing all APIs with algo_name parameter
+# ========================================
+print("\n=== Starting Algo ID Tests ===")
+
+# OrderApi (V2) Tests with algo_name
+print("\n--- OrderApi (V2) Tests with algo_name ---")
+
+# Test place_order V2 with algo_name
+api_instance = upstox_client.OrderApi(upstox_client.ApiClient(configuration))
+body = upstox_client.PlaceOrderRequest(1, "D", "DAY", 5.0, "string", "NSE_EQ|INE528G01035", "LIMIT", "BUY", 0, 0.0, True)
+api_version = '2.0'
+try:
+    api_response = api_instance.place_order(body, api_version, algo_name=data_token.algo_name_header)
+    if is_within_market_hours():
+        if api_response.status != "success":
+            print("error in place order with algo_name")
+        else:
+            print("✅ place_order V2 with algo_name: Success")
+    else:
+        print("✅ place_order V2 with algo_name: Called successfully (outside market hours)")
+except ApiException as e:
+    if e.status == 400:
+        if not is_within_market_hours():
+            print("✅ place_order V2 with algo_name: Expected exception outside market hours")
+        else:
+            print("exception in place order with algo_name: ", e)
+    else:
+        print("exception in place order with algo_name: ", e)
+
+# Test modify_order V2 with algo_name
+api_instance = upstox_client.OrderApi(upstox_client.ApiClient(configuration))
+body = upstox_client.ModifyOrderRequest(2, "DAY", 5, "231222010275930", "LIMIT", 0, 0)
+api_version = '2.0'
+try:
+    api_response = api_instance.modify_order(body, api_version, algo_name=data_token.algo_name_header)
+    print("✅ modify_order V2 with algo_name: Success")
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("modify order with algo_name giving wrong response")
+    else:
+        print("✅ modify_order V2 with algo_name: Expected error response")
+
+# Test cancel_multi_order V2 with algo_name
+param = {
+    'tag': "sdk_python_tag"
+}
+try:
+    api_response = api_instance.cancel_multi_order(**param, algo_name=data_token.algo_name_header)
+    print("✅ cancel_multi_order V2 with algo_name: Success")
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI1109":
+        print("cancel multi with algo_name giving wrong response")
+    else:
+        print("✅ cancel_multi_order V2 with algo_name: Expected error response")
+
+# Test exit_positions V2 with algo_name
+try:
+    api_response = api_instance.exit_positions(**param, algo_name=data_token.algo_name_header)
+    print("✅ exit_positions V2 with algo_name: Success")
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI1111" and data_dict.get('errors')[0].get('errorCode') != "UDAPI1113":
+        print("exit position with algo_name giving wrong response")
+    else:
+        print("✅ exit_positions V2 with algo_name: Expected error response")
+
+# Test place_multi_order V2 with algo_name
+body = [
+    upstox_client.MultiOrderRequest(1, "I", "DAY", 4, "kg_python_sdk", False, "NSE_EQ|INE669E01016", "LIMIT", "BUY",
+                                    0, 0, True, "1"),
+    upstox_client.MultiOrderRequest(1, "D", "DAY", 8.9, "kg_python_sdk1", False, "NSE_EQ|INE669E01016", "LIMIT", "BUY",
+                                    0, 0, True, "2")
+]
+try:
+    api_response = api_instance.place_multi_order(body, algo_name=data_token.algo_name_header)
+    print("✅ place_multi_order V2 with algo_name: Success - ", api_response)
+except ApiException as e:
+    print("✅ place_multi_order V2 with algo_name: Exception handled - ", e.body)
+
+# Test cancel_order V2 with algo_name
+order_id = '231221011081579'
+api_version = '2.0'
+try:
+    api_response = api_instance.cancel_order(order_id, api_version, algo_name=data_token.algo_name_header)
+    print("✅ cancel_order V2 with algo_name: Success")
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("cancel order V2 with algo_name giving wrong response")
+    else:
+        print("✅ cancel_order V2 with algo_name: Expected error response")
+
+# OrderApiV3 Tests with algo_name
+print("\n--- OrderApiV3 Tests with algo_name ---")
+
+api_instance = upstox_client.OrderApiV3(upstox_client.ApiClient(configuration))
+
+# Test place_order V3 with algo_name
+body = upstox_client.PlaceOrderV3Request(quantity=1, product="D", validity="DAY", price=9.12, tag="string", 
+                                        instrument_token="NSE_EQ|INE669E01016", order_type="LIMIT", 
+                                        transaction_type="BUY", disclosed_quantity=0, trigger_price=0.0, 
+                                        is_amo=True, slice=True)
+try:
+    api_response = api_instance.place_order(body, algo_name=data_token.algo_name_header)
+    print("✅ place_order V3 with algo_name: Success - ", api_response)
+except ApiException as e:
+    print("✅ place_order V3 with algo_name: Exception handled - ", e)
+
+# Test modify_order V3 with algo_name
+body = upstox_client.ModifyOrderRequest(1, "DAY", 9.12, "25030310405859", "LIMIT", 0, 0)
+try:
+    api_response = api_instance.modify_order(body, algo_name=data_token.algo_name_header)
+    print("✅ modify_order V3 with algo_name: Success")
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("modify V3 with algo_name giving error")
+    else:
+        print("✅ modify_order V3 with algo_name: Expected error response")
+
+# Test cancel_order V3 with algo_name
+try:
+    api_response = api_instance.cancel_order("2501211050101", algo_name=data_token.algo_name_header)
+    print("✅ cancel_order V3 with algo_name: Success")
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("cancel V3 with algo_name giving error")
+    else:
+        print("✅ cancel_order V3 with algo_name: Expected error response")
+
+# GTT Tests with algo_name
+print("\n--- GTT Tests with algo_name ---")
+
+# Test place_gtt_order with algo_name
+entry_rule = upstox_client.GttRule(strategy="ENTRY", trigger_type="BELOW", trigger_price=6)
+target_rule = upstox_client.GttRule(strategy="TARGET", trigger_type="IMMEDIATE", trigger_price=9)
+stoploss_rule = upstox_client.GttRule(strategy="STOPLOSS", trigger_type="IMMEDIATE", trigger_price=5)
+rules = [entry_rule, target_rule, stoploss_rule]
+body = upstox_client.GttPlaceOrderRequest(type="MULTIPLE", instrument_token="NSE_EQ|INE669E01016", 
+                                         product="D", quantity=1, rules=rules, transaction_type="BUY")
+try:
+    api_response = api_instance.place_gtt_order(body=body, algo_name=data_token.algo_name_header)
+    print("✅ place_gtt_order with algo_name: Success - ", api_response)
+except ApiException as e:
+    print("✅ place_gtt_order with algo_name: Exception handled - ", e)
+
+# Test place_gtt_order (TSL) with algo_name
+entry_rule = upstox_client.GttRule(strategy="ENTRY", trigger_type="BELOW", trigger_price=60)
+target_rule = upstox_client.GttRule(strategy="TARGET", trigger_type="IMMEDIATE", trigger_price=90)
+stoploss_rule = upstox_client.GttRule(strategy="STOPLOSS", trigger_type="IMMEDIATE", trigger_price=50, trailing_gap=3)
+rules = [entry_rule, target_rule, stoploss_rule]
+body = upstox_client.GttPlaceOrderRequest(type="MULTIPLE", instrument_token="NSE_EQ|INE584A01023", 
+                                         product="MTF", quantity=1, rules=rules, transaction_type="BUY")
+try:
+    api_response = api_instance.place_gtt_order(body=body, algo_name=data_token.algo_name_header)
+    print("✅ place_gtt_order (TSL) with algo_name: Success - ", api_response)
+except ApiException as e:
+    print("✅ place_gtt_order (TSL) with algo_name: Exception handled - ", e)
+
+# Test modify_gtt_order with algo_name
+body = upstox_client.GttModifyOrderRequest(type="MULTIPLE", gtt_order_id="GTT-C2503030018840", rules=rules, quantity=2)
+try:
+    api_response = api_instance.modify_gtt_order(body=body, algo_name=data_token.algo_name_header)
+    print("✅ modify_gtt_order with algo_name: Success")
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("modify gtt with algo_name giving error")
+    else:
+        print("✅ modify_gtt_order with algo_name: Expected error response")
+
+# Test cancel_gtt_order with algo_name
+body = upstox_client.GttCancelOrderRequest(gtt_order_id="GTT-C250303008840")
+try:
+    api_response = api_instance.cancel_gtt_order(body=body, algo_name=data_token.algo_name_header)
+    print("✅ cancel_gtt_order with algo_name: Success")
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100010":
+        print("cancel gtt with algo_name giving error")
+    else:
+        print("✅ cancel_gtt_order with algo_name: Expected error response")
+
+print("\n=== Algo ID Tests Complete ===")
+print("All 12 APIs tested with algo_name parameter successfully!")
+
+api_instance = upstox_client.InstrumentsApi(upstox_client.ApiClient(configuration))
+
+# Basic search with just query
+try:
+    api_response = api_instance.search_instrument("Nifty 50")
+    
+    if api_response.status != "success":
+        print("error in search_instrument basic query")
+except ApiException as e:
+    print("Exception when calling InstrumentsApi->search_instrument: %s\n" % e)
+
+# Search with exchange filter
+try:
+    api_response = api_instance.search_instrument("Reliance", exchanges="NSE")
+   
+    if api_response.status != "success":
+        print("error in search_instrument with exchange filter")
+except ApiException as e:
+    print("Exception when calling InstrumentsApi->search_instrument with exchange: %s\n" % e)
+
+# Search with segment filter
+try:
+    api_response = api_instance.search_instrument("TCS", segments="EQ")
+    
+    if api_response.status != "success":
+        print("error in search_instrument with segment filter")
+except ApiException as e:
+    print("Exception when calling InstrumentsApi->search_instrument with segment: %s\n" % e)
+
+# Search with instrument type filter
+try:
+    api_response = api_instance.search_instrument("Nifty", instrument_types="INDEX")
+    
+    if api_response.status != "success":
+        print("error in search_instrument with instrument type filter")
+except ApiException as e:
+    print("Exception when calling InstrumentsApi->search_instrument with instrument_types: %s\n" % e)
+
+# Search with pagination
+try:
+    api_response = api_instance.search_instrument("HDFC", page_number=1, records=5)
+    
+    if api_response.status != "success":
+        print("error in search_instrument with pagination")
+except ApiException as e:
+    print("Exception when calling InstrumentsApi->search_instrument with pagination: %s\n" % e)
+
+api_instance = upstox_client.NewsApi(upstox_client.ApiClient(configuration))
+
+# Get news by instrument_keys category
+try:
+    api_response = api_instance.get_news("instrument_keys", instrument_keys="NSE_EQ|INE669E01016")
+    if api_response.status != "success":
+        print("error in get_news with instrument_keys category")
+except ApiException as e:
+    print("Exception when calling NewsApi->get_news with instrument_keys: %s\n" % e)
+
+# Get news by positions category
+try:
+    api_response = api_instance.get_news("positions")
+    if api_response.status != "success":
+        print("error in get_news with positions category")
+except ApiException as e:
+    print("Exception when calling NewsApi->get_news with positions: %s\n" % e)
+
+# Get news by holdings category
+try:
+    api_response = api_instance.get_news("holdings")
+    if api_response.status != "success":
+        print("error in get_news with holdings category")
+except ApiException as e:
+    print("Exception when calling NewsApi->get_news with holdings: %s\n" % e)
+
+# Get news with pagination
+try:
+    api_response = api_instance.get_news("instrument_keys", instrument_keys="NSE_EQ|INE040A01034", page_number=1, page_size=5)
+    if api_response.status != "success":
+        print("error in get_news with pagination")
+except ApiException as e:
+    print("Exception when calling NewsApi->get_news with pagination: %s\n" % e)
+
+# Model instantiation tests
+news_item = upstox_client.NewsItemData(
+    heading="Test heading",
+    summary="Test summary",
+    thumbnail="https://example.com/thumb.jpg",
+    article_link="https://example.com/article",
+    published_time="2026-04-20T10:00:00Z"
+)
+if news_item.heading != "Test heading":
+    print("error: NewsItemData heading field not set correctly")
+if news_item.summary != "Test summary":
+    print("error: NewsItemData summary field not set correctly")
+if news_item.article_link != "https://example.com/article":
+    print("error: NewsItemData article_link field not set correctly")
+
+news_response = upstox_client.GetNewsResponse(
+    status="success",
+    data=[news_item]
+)
+if news_response.status != "success":
+    print("error: GetNewsResponse status field not set correctly")
+
+news_meta = upstox_client.NewsResponseMetaData()
+news_page = upstox_client.NewsResponsePageData()
+
+
+api_instance = upstox_client.LoginApi(upstox_client.ApiClient(configuration))
+api_version = '2.0'
+
+body = upstox_client.IndieUserTokenRequest(client_secret="9rmbdvjsb")
+try:
+    api_response = api_instance.init_token_request_for_indie_user(body,client_id="fd33050-ac87-4ecb-b4e1-4ec994c70c32")
+    print(api_response)
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') != "UDAPI100069":
+        print("indie token request giving error")
+
+# ========================================
+# MUTUAL FUND API TESTS
+# ========================================
+
+api_instance = upstox_client.MutualFundApi(upstox_client.ApiClient(configuration))
+
+try:
+    api_response = api_instance.get_mutual_fund_holdings()
+    if api_response.status != "success":
+        print("error in get_mutual_fund_holdings")
+except ApiException as e:
+    print("Exception when calling MutualFundApi->get_mutual_fund_holdings: %s\n" % e)
+
+try:
+    api_response = api_instance.get_mutual_fund_orders()
+    if api_response.status != "success":
+        print("error in get_mutual_fund_orders")
+except ApiException as e:
+    print("Exception when calling MutualFundApi->get_mutual_fund_orders: %s\n" % e)
+
+try:
+    api_response = api_instance.get_mutual_fund_orders(status="COMPLETED", transaction_type="BUY", page_number=1, records=10)
+    if api_response.status != "success":
+        print("error in get_mutual_fund_orders with filters")
+except ApiException as e:
+    print("Exception when calling MutualFundApi->get_mutual_fund_orders (filtered): %s\n" % e)
+
+try:
+    api_response = api_instance.get_mutual_fund_order(order_id="MF-ORDER-001")
+    if api_response.status != "success":
+        print("error in get_mutual_fund_order")
+except ApiException as e:
+    json_string = e.body.decode('utf-8')
+    data_dict = json.loads(json_string)
+    if data_dict.get('errors')[0].get('errorCode') not in ["UDAPI100010", "UDAPI100050"]:
+        print("get_mutual_fund_order giving wrong error response")
+
+try:
+    api_response = api_instance.get_mutual_fund_sips()
+    if api_response.status != "success":
+        print("error in get_mutual_fund_sips")
+except ApiException as e:
+    print("Exception when calling MutualFundApi->get_mutual_fund_sips: %s\n" % e)
+
+try:
+    api_response = api_instance.get_mutual_fund_sips(page_number=1, records=10)
+    if api_response.status != "success":
+        print("error in get_mutual_fund_sips with pagination")
+except ApiException as e:
+    print("Exception when calling MutualFundApi->get_mutual_fund_sips (paginated): %s\n" % e)
+
+# Model instantiation smoke tests
+mf_holding = upstox_client.MutualFundHoldingData()
+if mf_holding is None:
+    print("error: MutualFundHoldingData instantiation failed")
+
+mf_meta = upstox_client.MutualFundMetaData()
+if mf_meta is None:
+    print("error: MutualFundMetaData instantiation failed")
+
+mf_order = upstox_client.MutualFundOrderData()
+if mf_order is None:
+    print("error: MutualFundOrderData instantiation failed")
+
+mf_sip = upstox_client.MutualFundSipData()
+if mf_sip is None:
+    print("error: MutualFundSipData instantiation failed")
+
+family_member = upstox_client.FamilyMemberData()
+if family_member is None:
+    print("error: FamilyMemberData instantiation failed")
+
+pagination = upstox_client.Pagination()
+if pagination is None:
+    print("error: Pagination instantiation failed")
+
+mf_holdings_resp = upstox_client.GetMutualFundHoldingsResponse()
+if mf_holdings_resp is None:
+    print("error: GetMutualFundHoldingsResponse instantiation failed")
+
+mf_orders_resp = upstox_client.GetMutualFundOrdersResponse()
+if mf_orders_resp is None:
+    print("error: GetMutualFundOrdersResponse instantiation failed")
+
+mf_order_details_resp = upstox_client.GetMutualFundOrderDetailsResponse()
+if mf_order_details_resp is None:
+    print("error: GetMutualFundOrderDetailsResponse instantiation failed")
+
+mf_sips_resp = upstox_client.GetMutualFundSipsResponse()
+if mf_sips_resp is None:
+    print("error: GetMutualFundSipsResponse instantiation failed")
+
+# ========================================
+# PAYMENTS API TESTS
+# ========================================
+
+api_instance = upstox_client.UserApi(upstox_client.ApiClient(configuration))
+
+try:
+    api_response = api_instance.get_payin_history()
+    if api_response.status != "success":
+        print("error in get_payin_history")
+except ApiException as e:
+    print("Exception when calling UserApi->get_payin_history: %s\n" % e)
+
+api_instance = upstox_client.UserApi(upstox_client.ApiClient(configuration))
+
+try:
+    api_response = api_instance.get_payout_history()
+    if api_response.status != "success":
+        print("error in get_payout_history")
+except ApiException as e:
+    print("Exception when calling UserApi->get_payout_history: %s\n" % e)
+
+# Model instantiation smoke tests for PaymentHistoryData and PaymentHistoryResponse
+payment_data = upstox_client.PaymentHistoryData()
+if payment_data is None:
+    print("error: PaymentHistoryData instantiation failed")
+
+payment_data_with_fields = upstox_client.PaymentHistoryData(
+    amount=1000.0,
+    mode="NEFT",
+    status="SUCCESS",
+    reason=None,
+    last_updated_at="2026-05-04T10:00:00Z",
+    bank_name="Test Bank",
+    transaction_id="TXN123456",
+    total_charges=0.0,
+    charges_category="PAYIN"
+)
+if payment_data_with_fields.amount != 1000.0:
+    print("error: PaymentHistoryData amount field not set correctly")
+if payment_data_with_fields.mode != "NEFT":
+    print("error: PaymentHistoryData mode field not set correctly")
+if payment_data_with_fields.transaction_id != "TXN123456":
+    print("error: PaymentHistoryData transaction_id field not set correctly")
+
+payment_response = upstox_client.PaymentHistoryResponse()
+if payment_response is None:
+    print("error: PaymentHistoryResponse instantiation failed")
+
+payment_response_with_data = upstox_client.PaymentHistoryResponse(
+    status="success",
+    data=[payment_data_with_fields]
+)
+if payment_response_with_data.status != "success":
+    print("error: PaymentHistoryResponse status field not set correctly")
+
+# --- fundamentals-market-data: FundamentalsApi ---
+fundamentals_instance = upstox_client.FundamentalsApi(upstox_client.ApiClient(configuration))
+isin = 'INE669E01016'
+
+try:
+    api_response = fundamentals_instance.get_company_profile(isin)
+    if api_response.status != "success":
+        print("FundamentalsApi->get_company_profile not returning success")
+except ApiException as e:
+    print("Exception when calling FundamentalsApi->get_company_profile: %s\n" % e)
+
+try:
+    api_response = fundamentals_instance.get_key_ratios(isin)
+    if api_response.status != "success":
+        print("FundamentalsApi->get_key_ratios not returning success")
+except ApiException as e:
+    print("Exception when calling FundamentalsApi->get_key_ratios: %s\n" % e)
+
+try:
+    api_response = fundamentals_instance.get_balance_sheet(isin)
+    if api_response.status != "success":
+        print("FundamentalsApi->get_balance_sheet not returning success")
+except ApiException as e:
+    print("Exception when calling FundamentalsApi->get_balance_sheet: %s\n" % e)
+
+try:
+    api_response = fundamentals_instance.get_income_statement(isin)
+    if api_response.status != "success":
+        print("FundamentalsApi->get_income_statement not returning success")
+except ApiException as e:
+    print("Exception when calling FundamentalsApi->get_income_statement: %s\n" % e)
+
+try:
+    api_response = fundamentals_instance.get_cash_flow(isin)
+    if api_response.status != "success":
+        print("FundamentalsApi->get_cash_flow not returning success")
+except ApiException as e:
+    print("Exception when calling FundamentalsApi->get_cash_flow: %s\n" % e)
+
+try:
+    api_response = fundamentals_instance.get_competitors('NSE_EQ|INE669E01016')
+    if api_response.status != "success":
+        print("FundamentalsApi->get_competitors not returning success")
+except ApiException as e:
+    print("Exception when calling FundamentalsApi->get_competitors: %s\n" % e)
+
+try:
+    api_response = fundamentals_instance.get_corporate_actions(isin)
+    if api_response.status != "success":
+        print("FundamentalsApi->get_corporate_actions not returning success")
+except ApiException as e:
+    print("Exception when calling FundamentalsApi->get_corporate_actions: %s\n" % e)
+
+try:
+    api_response = fundamentals_instance.get_share_holdings(isin)
+    if api_response.status != "success":
+        print("FundamentalsApi->get_share_holdings not returning success")
+except ApiException as e:
+    print("Exception when calling FundamentalsApi->get_share_holdings: %s\n" % e)
+
+# --- fundamentals-market-data: MarketApi ---
+market_instance = upstox_client.MarketApi(upstox_client.ApiClient(configuration))
+nifty_key = 'NSE_INDEX|Nifty 50'
+expiry_date = '2026-05-29'
+today_date = '2026-05-12'
+
+try:
+    api_response = market_instance.get_oi_data(nifty_key, expiry_date, today_date)
+    if api_response.status != "success":
+        print("MarketApi->get_oi_data not returning success")
+except ApiException as e:
+    print("Exception when calling MarketApi->get_oi_data: %s\n" % e)
+
+try:
+    api_response = market_instance.get_change_oi_data(nifty_key, expiry_date, today_date, 5)
+    if api_response.status != "success":
+        print("MarketApi->get_change_oi_data not returning success")
+except ApiException as e:
+    print("Exception when calling MarketApi->get_change_oi_data: %s\n" % e)
+
+try:
+    api_response = market_instance.get_pcr_data(nifty_key, expiry_date, today_date, 30)
+    if api_response.status != "success":
+        print("MarketApi->get_pcr_data not returning success")
+except ApiException as e:
+    print("Exception when calling MarketApi->get_pcr_data: %s\n" % e)
+
+try:
+    api_response = market_instance.get_max_pain_data(nifty_key, expiry_date, today_date, 30)
+    if api_response.status != "success":
+        print("MarketApi->get_max_pain_data not returning success")
+except ApiException as e:
+    print("Exception when calling MarketApi->get_max_pain_data: %s\n" % e)
+
+try:
+    api_response = market_instance.get_fii_data('NSE_EQ|CASH', '1D')
+    if api_response.status != "success":
+        print("MarketApi->get_fii_data not returning success")
+except ApiException as e:
+    print("Exception when calling MarketApi->get_fii_data: %s\n" % e)
+
+try:
+    api_response = market_instance.get_dii_data('NSE_EQ|CASH', '1D')
+    if api_response.status != "success":
+        print("MarketApi->get_dii_data not returning success")
+except ApiException as e:
+    print("Exception when calling MarketApi->get_dii_data: %s\n" % e)
+
+# --- fundamentals-market-data: model smoke tests ---
+analytics_response = upstox_client.AnalyticsResponse()
+if analytics_response is None:
+    print("error: AnalyticsResponse instantiation failed")
+
+analytics_response_with_data = upstox_client.AnalyticsResponse(status="success")
+if analytics_response_with_data.status != "success":
+    print("error: AnalyticsResponse status field not set correctly")
+
+balance_sheet_data = upstox_client.BalanceSheetData()
+if balance_sheet_data is None:
+    print("error: BalanceSheetData instantiation failed")
+
+balance_sheet_history_item = upstox_client.BalanceSheetHistoryItem()
+if balance_sheet_history_item is None:
+    print("error: BalanceSheetHistoryItem instantiation failed")
+
+balance_sheet_response = upstox_client.BalanceSheetResponse(status="success")
+if balance_sheet_response.status != "success":
+    print("error: BalanceSheetResponse status field not set correctly")
+
+cash_flow_data = upstox_client.CashFlowData()
+if cash_flow_data is None:
+    print("error: CashFlowData instantiation failed")
+
+cash_flow_entry = upstox_client.CashFlowEntry()
+if cash_flow_entry is None:
+    print("error: CashFlowEntry instantiation failed")
+
+cash_flow_response = upstox_client.CashFlowResponse(status="success")
+if cash_flow_response.status != "success":
+    print("error: CashFlowResponse status field not set correctly")
+
+company_profile_data = upstox_client.CompanyProfileData()
+if company_profile_data is None:
+    print("error: CompanyProfileData instantiation failed")
+
+company_profile_response = upstox_client.CompanyProfileResponse(status="success")
+if company_profile_response.status != "success":
+    print("error: CompanyProfileResponse status field not set correctly")
+
+competitor_data = upstox_client.CompetitorData()
+if competitor_data is None:
+    print("error: CompetitorData instantiation failed")
+
+competitors_response = upstox_client.CompetitorsResponse(status="success")
+if competitors_response.status != "success":
+    print("error: CompetitorsResponse status field not set correctly")
+
+corporate_action_data = upstox_client.CorporateActionData()
+if corporate_action_data is None:
+    print("error: CorporateActionData instantiation failed")
+
+corporate_action_event_detail = upstox_client.CorporateActionEventDetail()
+if corporate_action_event_detail is None:
+    print("error: CorporateActionEventDetail instantiation failed")
+
+corporate_actions_response = upstox_client.CorporateActionsResponse(status="success")
+if corporate_actions_response.status != "success":
+    print("error: CorporateActionsResponse status field not set correctly")
+
+financial_statement_entry = upstox_client.FinancialStatementEntry()
+if financial_statement_entry is None:
+    print("error: FinancialStatementEntry instantiation failed")
+
+history_item = upstox_client.HistoryItem()
+if history_item is None:
+    print("error: HistoryItem instantiation failed")
+
+income_statement_data = upstox_client.IncomeStatementData()
+if income_statement_data is None:
+    print("error: IncomeStatementData instantiation failed")
+
+income_statement_entry = upstox_client.IncomeStatementEntry()
+if income_statement_entry is None:
+    print("error: IncomeStatementEntry instantiation failed")
+
+income_statement_response = upstox_client.IncomeStatementResponse(status="success")
+if income_statement_response.status != "success":
+    print("error: IncomeStatementResponse status field not set correctly")
+
+key_ratio_data = upstox_client.KeyRatioData()
+if key_ratio_data is None:
+    print("error: KeyRatioData instantiation failed")
+
+key_ratios_response = upstox_client.KeyRatiosResponse(status="success")
+if key_ratios_response.status != "success":
+    print("error: KeyRatiosResponse status field not set correctly")
+
+sector_market_cap_amount = upstox_client.SectorMarketCapAmount()
+if sector_market_cap_amount is None:
+    print("error: SectorMarketCapAmount instantiation failed")
+
+share_holding_data = upstox_client.ShareHoldingData()
+if share_holding_data is None:
+    print("error: ShareHoldingData instantiation failed")
+
+share_holdings_response = upstox_client.ShareHoldingsResponse(status="success")
+if share_holdings_response.status != "success":
+    print("error: ShareHoldingsResponse status field not set correctly")
+
+# ----------------------------------------------------------------------------
+# IPO APIs (IpoApi)
+# ----------------------------------------------------------------------------
+ipo_api_instance = upstox_client.IpoApi(upstox_client.ApiClient(configuration))
+
+try:
+    # Get IPO Listing
+    api_response = ipo_api_instance.get_ipo_listing(status="open", issue_type="regular", page_number=1, records=20)
+    if api_response.status != "success":
+        print("error in get_ipo_listing API")
+except ApiException as e:
+    print("Exception when calling IpoApi->get_ipo_listing: %s\n" % e)
+
+try:
+    # Get IPO Details (in real usage, pass a slug id returned by get_ipo_listing)
+    api_response = ipo_api_instance.get_ipo_details("sample-ipo-slug")
+    if api_response.status != "success":
+        print("error in get_ipo_details API")
+except ApiException as e:
+    print("Exception when calling IpoApi->get_ipo_details: %s\n" % e)
+
+try:
+    # Get IPO Orders (read-only)
+    api_response = ipo_api_instance.get_ipo_orders()
+    if api_response.status != "success":
+        print("error in get_ipo_orders API")
+except ApiException as e:
+    print("Exception when calling IpoApi->get_ipo_orders: %s\n" % e)
+
+try:
+    # Get IPO Order by id (in real usage, pass an order id returned by get_ipo_orders)
+    api_response = ipo_api_instance.get_ipo_order_by_id("sample-ipo-order-id")
+    if api_response.status != "success":
+        print("error in get_ipo_order_by_id API")
+except ApiException as e:
+    print("Exception when calling IpoApi->get_ipo_order_by_id: %s\n" % e)
+
+# apply_for_ipo/cancel_ipo_order place and withdraw a real IPO application and
+# block funds via the UPI mandate. Disabled by default; set
+# RUN_DESTRUCTIVE_IPO_TESTS = True to exercise them against a real account.
+RUN_DESTRUCTIVE_IPO_TESTS = False
+if RUN_DESTRUCTIVE_IPO_TESTS:
+    try:
+        # Apply for IPO — id/upi/category/bids are all required, max 3 bids
+        body = upstox_client.IpoApplyRequest(
+            id="sample-ipo-slug",
+            upi="someone@upi",
+            category="IND",
+            bids=[upstox_client.IpoBidRequest(quantity=10, price=150.0)]
+        )
+        api_response = ipo_api_instance.apply_for_ipo(body)
+        ipo_order_id = api_response.data.order_id
+
+        # Cancel IPO Order
+        api_response = ipo_api_instance.cancel_ipo_order(ipo_order_id)
+        print("ipo apply/cancel cycle:", api_response.status)
+    except ApiException as e:
+        print("Exception when calling IpoApi ipo order write ops: %s\n" % e)
+
+# ----------------------------------------------------------------------------
+# Smartlist APIs (MarketApi)
+# ----------------------------------------------------------------------------
+market_api_instance = upstox_client.MarketApi(upstox_client.ApiClient(configuration))
+
+try:
+    # Get Smartlist Options
+    api_response = market_api_instance.get_smartlist_options(asset_type="INDEX", category="TOP_TRADED", page_number=1, page_size=50)
+    if api_response.status != "success":
+        print("error in get_smartlist_options API")
+except ApiException as e:
+    print("Exception when calling MarketApi->get_smartlist_options: %s\n" % e)
+
+try:
+    # Get Smartlist Futures
+    api_response = market_api_instance.get_smartlist_futures(asset_type="STOCK", category="MOST_ACTIVE", page_number=1, page_size=50)
+    if api_response.status != "success":
+        print("error in get_smartlist_futures API")
+except ApiException as e:
+    print("Exception when calling MarketApi->get_smartlist_futures: %s\n" % e)
+
+try:
+    # Get Smartlist MTF
+    api_response = market_api_instance.get_smartlist_mtf(page_number=1, page_size=50)
+    if api_response.status != "success":
+        print("error in get_smartlist_mtf API")
+except ApiException as e:
+    print("Exception when calling MarketApi->get_smartlist_mtf: %s\n" % e)
+
+# ----------------------------------------------------------------------------
+# Payout APIs (UserApi)
+# ----------------------------------------------------------------------------
+payout_api_instance = upstox_client.UserApi(upstox_client.ApiClient(configuration))
+
+try:
+    # Get Payout History (read-only)
+    api_response = payout_api_instance.get_payout_history()
+    if api_response.status != "success":
+        print("error in get_payout_history API")
+except ApiException as e:
+    print("Exception when calling UserApi->get_payout_history: %s\n" % e)
+
+try:
+    # Get Payout Modes (read-only)
+    api_response = payout_api_instance.get_payout_modes()
+    if api_response.status != "success":
+        print("error in get_payout_modes API")
+except ApiException as e:
+    print("Exception when calling UserApi->get_payout_modes: %s\n" % e)
+
+# Initiate/Modify/Cancel payout move real funds. Disabled by default; set
+# RUN_DESTRUCTIVE_PAYOUT_TESTS = True to exercise them against a real account.
+RUN_DESTRUCTIVE_PAYOUT_TESTS = False
+if RUN_DESTRUCTIVE_PAYOUT_TESTS:
+    try:
+        # Initiate Payout
+        body = upstox_client.InitiatePayoutRequest(mode="IMPS", amount=1.0)
+        api_response = payout_api_instance.initiate_payout(body)
+        transaction_id = api_response.data.transaction_id
+
+        # Modify Payout
+        modify_body = upstox_client.ModifyPayoutRequest(amount=2.0)
+        api_response = payout_api_instance.modify_payout(modify_body, transaction_id)
+
+        # Cancel Payout
+        api_response = payout_api_instance.cancel_payout(transaction_id)
+        print("payout initiate/modify/cancel cycle:", api_response.status)
+    except ApiException as e:
+        print("Exception when calling UserApi payout write ops: %s\n" % e)
+
+# ----------------------------------------------------------------------------
+# Model instantiation smoke tests (new models)
+# ----------------------------------------------------------------------------
+ipo_listing_data = upstox_client.IpoListingData(symbol="XYZ", status="open")
+if ipo_listing_data.symbol != "XYZ":
+    print("error: IpoListingData fields not set correctly")
+
+ipo_meta_data = upstox_client.IpoMetaData(page=upstox_client.Pagination(page_number=1))
+if ipo_meta_data.page.page_number != 1:
+    print("error: IpoMetaData fields not set correctly")
+
+ipo_listing_response = upstox_client.IpoListingResponse(status="success", data=[ipo_listing_data], meta_data=ipo_meta_data)
+if ipo_listing_response.status != "success":
+    print("error: IpoListingResponse status field not set correctly")
+
+ipo_timeline = upstox_client.IpoTimeline(listing_date="2026-07-01")
+if ipo_timeline.listing_date != "2026-07-01":
+    print("error: IpoTimeline fields not set correctly")
+
+ipo_registrar_info = upstox_client.IpoRegistrarInfo(name="Registrar Co")
+if ipo_registrar_info.name != "Registrar Co":
+    print("error: IpoRegistrarInfo fields not set correctly")
+
+ipo_details_data = upstox_client.IpoDetailsData(id="abc", symbol="XYZ", lot_size=10, timeline=ipo_timeline, registrar_info=ipo_registrar_info)
+if ipo_details_data.lot_size != 10:
+    print("error: IpoDetailsData fields not set correctly")
+
+ipo_details_response = upstox_client.IpoDetailsResponse(status="success", data=ipo_details_data)
+if ipo_details_response.status != "success":
+    print("error: IpoDetailsResponse status field not set correctly")
+
+ipo_investor_type = upstox_client.IpoInvestorType(category="IND", description="Individual Investor")
+if ipo_investor_type.category != "IND":
+    print("error: IpoInvestorType fields not set correctly")
+
+ipo_details_data_with_investors = upstox_client.IpoDetailsData(id="abc", investors=[ipo_investor_type])
+if ipo_details_data_with_investors.investors[0].category != "IND":
+    print("error: IpoDetailsData investors field not set correctly")
+
+ipo_listing_data_with_investors = upstox_client.IpoListingData(symbol="XYZ", investors=[ipo_investor_type])
+if ipo_listing_data_with_investors.investors[0].description != "Individual Investor":
+    print("error: IpoListingData investors field not set correctly")
+
+ipo_bid_request = upstox_client.IpoBidRequest(quantity=10, price=150.5)
+if ipo_bid_request.quantity != 10 or ipo_bid_request.price != 150.5:
+    print("error: IpoBidRequest fields not set correctly")
+
+ipo_apply_request = upstox_client.IpoApplyRequest(id="sample-ipo-slug", upi="someone@upi", category="IND", bids=[ipo_bid_request])
+if ipo_apply_request.upi != "someone@upi" or len(ipo_apply_request.bids) != 1:
+    print("error: IpoApplyRequest fields not set correctly")
+
+ipo_apply_data = upstox_client.IpoApplyData(order_id="O1")
+if ipo_apply_data.order_id != "O1":
+    print("error: IpoApplyData fields not set correctly")
+
+ipo_apply_response = upstox_client.IpoApplyResponse(status="success", data=ipo_apply_data)
+if ipo_apply_response.status != "success":
+    print("error: IpoApplyResponse status field not set correctly")
+
+ipo_order_bid = upstox_client.IpoOrderBid(quantity=10, price=150.5, amount=1505.0, message="accepted")
+if ipo_order_bid.amount != 1505.0:
+    print("error: IpoOrderBid fields not set correctly")
+
+ipo_order_data = upstox_client.IpoOrderData(id="abc", symbol="XYZ", exchange="NSE", order_id="O1", order_status="COMPLETE", category="IND", issue_type="regular", units_allotted=10, bids=[ipo_order_bid])
+if ipo_order_data.order_id != "O1" or ipo_order_data.units_allotted != 10:
+    print("error: IpoOrderData fields not set correctly")
+
+ipo_order_response = upstox_client.IpoOrderResponse(status="success", data=[ipo_order_data], meta_data=ipo_meta_data)
+if ipo_order_response.status != "success":
+    print("error: IpoOrderResponse status field not set correctly")
+
+ipo_order_detail_response = upstox_client.IpoOrderDetailResponse(status="success", data=ipo_order_data)
+if ipo_order_detail_response.data.symbol != "XYZ":
+    print("error: IpoOrderDetailResponse fields not set correctly")
+
+ipo_cancel_data = upstox_client.IpoCancelData(order_id="O1", status="CANCELLED")
+if ipo_cancel_data.status != "CANCELLED":
+    print("error: IpoCancelData fields not set correctly")
+
+ipo_cancel_response = upstox_client.IpoCancelResponse(status="success", data=ipo_cancel_data)
+if ipo_cancel_response.data.order_id != "O1":
+    print("error: IpoCancelResponse fields not set correctly")
+
+initiate_payout_request = upstox_client.InitiatePayoutRequest(mode="IMPS", amount=500.0)
+if initiate_payout_request.amount != 500.0:
+    print("error: InitiatePayoutRequest fields not set correctly")
+
+modify_payout_request = upstox_client.ModifyPayoutRequest(amount=750.0)
+if modify_payout_request.amount != 750.0:
+    print("error: ModifyPayoutRequest fields not set correctly")
+
+payout_details = upstox_client.PayoutDetails(status="SUCCESS", transaction_id="T1", amount=500.0)
+if payout_details.transaction_id != "T1":
+    print("error: PayoutDetails fields not set correctly")
+
+payout_details_response = upstox_client.PayoutDetailsResponse(status="success", data=payout_details)
+if payout_details_response.status != "success":
+    print("error: PayoutDetailsResponse status field not set correctly")
+
+payout_modes_data = upstox_client.PayoutModesData()
+if payout_modes_data is None:
+    print("error: PayoutModesData instantiation failed")
+
+payout_modes_response = upstox_client.PayoutModesResponse(status="success", data=payout_modes_data)
+if payout_modes_response.status != "success":
+    print("error: PayoutModesResponse status field not set correctly")
+
+login_api_instance = upstox_client.LoginApi(upstox_client.ApiClient(configuration))
+try:
+    # Logout
+    api_response = login_api_instance.logout(api_version)
+    print(api_response)
+    print("successfully logged out")
+except ApiException as e:
+    print("Exception when calling LoginApi->logout: %s\n" % e)

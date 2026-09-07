@@ -3,7 +3,7 @@
 """
     Upstox Developer API
 
-    Build your App on the Upstox platform  ![Banner](https://api-v2.upstox.com/api-docs/images/banner.jpg \"banner\")  # Introduction  Upstox API is a set of rest APIs that provide data required to build a complete investment and trading platform. Execute orders in real time, manage user portfolio, stream live market data (using Websocket), and more, with the easy to understand API collection.  All requests are over HTTPS and the requests are sent with the content-type ‘application/json’. Developers have the option of choosing the response type as JSON or CSV for a few API calls.  To be able to use these APIs you need to create an App in the Developer Console and generate your **apiKey** and **apiSecret**. You can use a redirect URL which will be called after the login flow.  If you are a **trader**, you can directly create apps from Upstox mobile app or the desktop platform itself from **Apps** sections inside the **Account** Tab. Head over to <a href=\"http://account.upstox.com/developer/apps\" target=\"_blank\">account.upstox.com/developer/apps</a>.</br> If you are a **business** looking to integrate Upstox APIs, reach out to us and we will get a custom app created for you in no time.  It is highly recommended that you do not embed the **apiSecret** in your frontend app. Create a remote backend which does the handshake on behalf of the frontend app. Marking the apiSecret in the frontend app will make your app vulnerable to threats and potential issues.   # noqa: E501
+    Build your App on the Upstox platform  ![Banner](https://api.upstox.com/api-docs/images/banner.jpg \"banner\")  # Introduction  Upstox API is a set of rest APIs that provide data required to build a complete investment and trading platform. Execute orders in real time, manage user portfolio, stream live market data (using Websocket), and more, with the easy to understand API collection.  All requests are over HTTPS and the requests are sent with the content-type ‘application/json’. Developers have the option of choosing the response type as JSON or CSV for a few API calls.  To be able to use these APIs you need to create an App in the Developer Console and generate your **apiKey** and **apiSecret**. You can use a redirect URL which will be called after the login flow.  If you are a **trader**, you can directly create apps from Upstox mobile app or the desktop platform itself from **Apps** sections inside the **Account** Tab. Head over to <a href=\"http://account.upstox.com/developer/apps\" target=\"_blank\">account.upstox.com/developer/apps</a>.</br> If you are a **business** looking to integrate Upstox APIs, reach out to us and we will get a custom app created for you in no time.  It is highly recommended that you do not embed the **apiSecret** in your frontend app. Create a remote backend which does the handshake on behalf of the frontend app. Marking the apiSecret in the frontend app will make your app vulnerable to threats and potential issues.   # noqa: E501
 
     OpenAPI spec version: v2
     
@@ -27,13 +27,14 @@ class TypeWithDefault(type):
         super(TypeWithDefault, cls).__init__(name, bases, dct)
         cls._default = None
 
-    def __call__(cls):
+    def __call__(cls, *args, **kwargs):
         if cls._default is None:
-            cls._default = type.__call__(cls)
+            cls._default = type.__call__(cls, *args, **kwargs)
         return copy.copy(cls._default)
 
     def set_default(cls, default):
         cls._default = copy.copy(default)
+
 
 
 class Configuration(six.with_metaclass(TypeWithDefault, object)):
@@ -43,10 +44,19 @@ class Configuration(six.with_metaclass(TypeWithDefault, object)):
     Do not edit the class manually.
     """
 
-    def __init__(self):
+    def __init__(self, sandbox=False):
         """Constructor"""
+
+        self.sandbox = sandbox
         # Default Base url
-        self.host = "https://api.upstox.com/v2"
+        if sandbox:
+            self.host = "https://api-sandbox.upstox.com"
+            self.order_host = "https://api-sandbox.upstox.com"
+        else:
+            self.host = "https://api.upstox.com"
+            self.order_host = "https://api-hft.upstox.com"
+
+
         # Temp file folder for downloading files
         self.temp_folder_path = None
 
@@ -102,6 +112,17 @@ class Configuration(six.with_metaclass(TypeWithDefault, object)):
         self.proxy = None
         # Safe chars for path_param
         self.safe_chars_for_path_param = ''
+
+        # valid sandbox endpoints
+        self.sandbox_urls = {
+            "/v2/order/place",
+            "/v2/order/modify",
+            "/v2/order/cancel",
+            "/v2/order/multi/place",
+            "/v3/order/place",
+            "/v3/order/modify",
+            "/v3/order/cancel",
+        }
 
     @property
     def logger_file(self):

@@ -3,7 +3,7 @@
 """
     Upstox Developer API
 
-    Build your App on the Upstox platform  ![Banner](https://api-v2.upstox.com/api-docs/images/banner.jpg \"banner\")  # Introduction  Upstox API is a set of rest APIs that provide data required to build a complete investment and trading platform. Execute orders in real time, manage user portfolio, stream live market data (using Websocket), and more, with the easy to understand API collection.  All requests are over HTTPS and the requests are sent with the content-type ‘application/json’. Developers have the option of choosing the response type as JSON or CSV for a few API calls.  To be able to use these APIs you need to create an App in the Developer Console and generate your **apiKey** and **apiSecret**. You can use a redirect URL which will be called after the login flow.  If you are a **trader**, you can directly create apps from Upstox mobile app or the desktop platform itself from **Apps** sections inside the **Account** Tab. Head over to <a href=\"http://account.upstox.com/developer/apps\" target=\"_blank\">account.upstox.com/developer/apps</a>.</br> If you are a **business** looking to integrate Upstox APIs, reach out to us and we will get a custom app created for you in no time.  It is highly recommended that you do not embed the **apiSecret** in your frontend app. Create a remote backend which does the handshake on behalf of the frontend app. Marking the apiSecret in the frontend app will make your app vulnerable to threats and potential issues.   # noqa: E501
+    Build your App on the Upstox platform  ![Banner](https://api.upstox.com/api-docs/images/banner.jpg \"banner\")  # Introduction  Upstox API is a set of rest APIs that provide data required to build a complete investment and trading platform. Execute orders in real time, manage user portfolio, stream live market data (using Websocket), and more, with the easy to understand API collection.  All requests are over HTTPS and the requests are sent with the content-type ‘application/json’. Developers have the option of choosing the response type as JSON or CSV for a few API calls.  To be able to use these APIs you need to create an App in the Developer Console and generate your **apiKey** and **apiSecret**. You can use a redirect URL which will be called after the login flow.  If you are a **trader**, you can directly create apps from Upstox mobile app or the desktop platform itself from **Apps** sections inside the **Account** Tab. Head over to <a href=\"http://account.upstox.com/developer/apps\" target=\"_blank\">account.upstox.com/developer/apps</a>.</br> If you are a **business** looking to integrate Upstox APIs, reach out to us and we will get a custom app created for you in no time.  It is highly recommended that you do not embed the **apiSecret** in your frontend app. Create a remote backend which does the handshake on behalf of the frontend app. Marking the apiSecret in the frontend app will make your app vulnerable to threats and potential issues.   # noqa: E501
 
     OpenAPI spec version: v2
     
@@ -34,7 +34,8 @@ class ModifyOrderRequest(object):
         'order_id': 'str',
         'order_type': 'str',
         'disclosed_quantity': 'int',
-        'trigger_price': 'float'
+        'trigger_price': 'float',
+        'market_protection': 'float'
     }
 
     attribute_map = {
@@ -44,10 +45,11 @@ class ModifyOrderRequest(object):
         'order_id': 'order_id',
         'order_type': 'order_type',
         'disclosed_quantity': 'disclosed_quantity',
-        'trigger_price': 'trigger_price'
+        'trigger_price': 'trigger_price',
+        'market_protection': 'market_protection'
     }
 
-    def __init__(self, quantity=None, validity=None, price=None, order_id=None, order_type=None, disclosed_quantity=None, trigger_price=None):  # noqa: E501
+    def __init__(self, quantity=None, validity=None, price=None, order_id=None, order_type=None, disclosed_quantity=None, trigger_price=None, market_protection=None):  # noqa: E501
         """ModifyOrderRequest - a model defined in Swagger"""  # noqa: E501
         self._quantity = None
         self._validity = None
@@ -56,6 +58,7 @@ class ModifyOrderRequest(object):
         self._order_type = None
         self._disclosed_quantity = None
         self._trigger_price = None
+        self._market_protection = None
         self.discriminator = None
         if quantity is not None:
             self.quantity = quantity
@@ -66,6 +69,8 @@ class ModifyOrderRequest(object):
         if disclosed_quantity is not None:
             self.disclosed_quantity = disclosed_quantity
         self.trigger_price = trigger_price
+        if market_protection is not None:
+            self.market_protection = market_protection
 
     @property
     def quantity(self):
@@ -249,6 +254,28 @@ class ModifyOrderRequest(object):
             raise ValueError("Invalid value for `trigger_price`, must not be `None`")  # noqa: E501
 
         self._trigger_price = trigger_price
+
+    @property
+    def market_protection(self):
+        """Gets the market_protection of this ModifyOrderRequest.  # noqa: E501
+
+        Optional market price protection (percentage).  # noqa: E501
+
+        :return: The market_protection of this ModifyOrderRequest.  # noqa: E501
+        :rtype: float
+        """
+        return self._market_protection
+
+    @market_protection.setter
+    def market_protection(self, market_protection):
+        """Sets the market_protection of this ModifyOrderRequest.
+
+        Optional market price protection (percentage).  # noqa: E501
+
+        :param market_protection: The market_protection of this ModifyOrderRequest.  # noqa: E501
+        :type: float
+        """
+        self._market_protection = market_protection
 
     def to_dict(self):
         """Returns the model properties as a dict"""

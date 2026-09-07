@@ -2,7 +2,7 @@
 """
     Upstox Developer API
 
-    Build your App on the Upstox platform  ![Banner](https://api-v2.upstox.com/api-docs/images/banner.jpg \"banner\")  # Introduction  Upstox API is a set of rest APIs that provide data required to build a complete investment and trading platform. Execute orders in real time, manage user portfolio, stream live market data (using Websocket), and more, with the easy to understand API collection.  All requests are over HTTPS and the requests are sent with the content-type ‘application/json’. Developers have the option of choosing the response type as JSON or CSV for a few API calls.  To be able to use these APIs you need to create an App in the Developer Console and generate your **apiKey** and **apiSecret**. You can use a redirect URL which will be called after the login flow.  If you are a **trader**, you can directly create apps from Upstox mobile app or the desktop platform itself from **Apps** sections inside the **Account** Tab. Head over to <a href=\"http://account.upstox.com/developer/apps\" target=\"_blank\">account.upstox.com/developer/apps</a>.</br> If you are a **business** looking to integrate Upstox APIs, reach out to us and we will get a custom app created for you in no time.  It is highly recommended that you do not embed the **apiSecret** in your frontend app. Create a remote backend which does the handshake on behalf of the frontend app. Marking the apiSecret in the frontend app will make your app vulnerable to threats and potential issues.   # noqa: E501
+    Build your App on the Upstox platform  ![Banner](https://api.upstox.com/api-docs/images/banner.jpg \"banner\")  # Introduction  Upstox API is a set of rest APIs that provide data required to build a complete investment and trading platform. Execute orders in real time, manage user portfolio, stream live market data (using Websocket), and more, with the easy to understand API collection.  All requests are over HTTPS and the requests are sent with the content-type ‘application/json’. Developers have the option of choosing the response type as JSON or CSV for a few API calls.  To be able to use these APIs you need to create an App in the Developer Console and generate your **apiKey** and **apiSecret**. You can use a redirect URL which will be called after the login flow.  If you are a **trader**, you can directly create apps from Upstox mobile app or the desktop platform itself from **Apps** sections inside the **Account** Tab. Head over to <a href=\"http://account.upstox.com/developer/apps\" target=\"_blank\">account.upstox.com/developer/apps</a>.</br> If you are a **business** looking to integrate Upstox APIs, reach out to us and we will get a custom app created for you in no time.  It is highly recommended that you do not embed the **apiSecret** in your frontend app. Create a remote backend which does the handshake on behalf of the frontend app. Marking the apiSecret in the frontend app will make your app vulnerable to threats and potential issues.   # noqa: E501
 
     OpenAPI spec version: v2
     
@@ -73,10 +73,15 @@ class ApiClient(object):
         self.cookie = cookie
         # Set default User-Agent.
         self.user_agent = 'Swagger-Codegen/1.0.0/python'
+        self.default_headers["X-Upstox-SDK-Language"] = "python"
+        self.default_headers["X-Upstox-SDK-Version"] = "2.30.0"
 
     def __del__(self):
-        self.pool.close()
-        self.pool.join()
+        try:
+            self.pool.close()
+            self.pool.join()
+        except Exception as e:
+            print(f"Error during ApiClient cleanup: {e}")
 
     @property
     def user_agent(self):
@@ -142,8 +147,10 @@ class ApiClient(object):
             body = self.sanitize_for_serialization(body)
 
         # request url
-        url = self.configuration.host + resource_path
-
+        if self.__is_order_path(resource_path):
+            url = self.configuration.order_host + resource_path
+        else:
+            url = self.configuration.host + resource_path
         # perform request and return response
         response_data = self.request(
             method, url, query_params=query_params, headers=header_params,
@@ -312,6 +319,10 @@ class ApiClient(object):
             If parameter async_req is False or missing,
             then the method will return the response directly.
         """
+
+        if self.configuration.sandbox and (not self.configuration.sandbox_urls.__contains__(resource_path)):
+            raise ValueError('This API is not available in sandbox mode.')
+
         if not async_req:
             return self.__call_api(resource_path, method,
                                    path_params, query_params, header_params,
@@ -630,3 +641,6 @@ class ApiClient(object):
             if klass_name:
                 instance = self.__deserialize(data, klass_name)
         return instance
+
+    def __is_order_path(self, path):
+        return path.__contains__("/order/place") or path.__contains__("/order/modify") or path.__contains__("/order/cancel")

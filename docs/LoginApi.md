@@ -1,6 +1,6 @@
 # upstox_client.LoginApi
 
-All URIs are relative to *https://api-v2.upstox.com*
+All URIs are relative to *https://api.upstox.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -63,6 +63,56 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **init_token_request_for_indie_user**
+> IndieUserInitTokenResponse init_token_request_for_indie_user(body, client_id)
+
+Init token API
+
+This API provides the initialize the generate token and it's expiry for an indie user
+
+### Example
+```python
+from __future__ import print_function
+import time
+import upstox_client
+from upstox_client.rest import ApiException
+from pprint import pprint
+
+# create an instance of the API class
+api_instance = upstox_client.LoginApi()
+body = upstox_client.IndieUserTokenRequest() # IndieUserTokenRequest | 
+client_id = 'client_id_example' # str | 
+
+try:
+    # Init token API
+    api_response = api_instance.init_token_request_for_indie_user(body, client_id)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling LoginApi->init_token_request_for_indie_user: %s\n" % e)
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**IndieUserTokenRequest**](IndieUserTokenRequest.md)|  | 
+ **client_id** | **str**|  | 
+
+### Return type
+
+[**IndieUserInitTokenResponse**](IndieUserInitTokenResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json, */*
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **logout**
 > LogoutResponse logout(api_version)
 
@@ -116,7 +166,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **token**
-> TokenResponse token(api_version, code=code, client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, grant_type=grant_type)
+> TokenResponse token(api_version, code=code, client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, grant_type=grant_type, refresh_extended_token=refresh_extended_token)
 
 Get token API
 
@@ -138,10 +188,11 @@ client_id = 'client_id_example' # str |  (optional)
 client_secret = 'client_secret_example' # str |  (optional)
 redirect_uri = 'redirect_uri_example' # str |  (optional)
 grant_type = 'grant_type_example' # str |  (optional)
+refresh_extended_token = True # bool |  (optional)
 
 try:
     # Get token API
-    api_response = api_instance.token(api_version, code=code, client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, grant_type=grant_type)
+    api_response = api_instance.token(api_version, code=code, client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, grant_type=grant_type, refresh_extended_token=refresh_extended_token)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling LoginApi->token: %s\n" % e)
@@ -157,6 +208,7 @@ Name | Type | Description  | Notes
  **client_secret** | **str**|  | [optional] 
  **redirect_uri** | **str**|  | [optional] 
  **grant_type** | **str**|  | [optional] 
+ **refresh_extended_token** | **bool**|  | [optional] 
 
 ### Return type
 
